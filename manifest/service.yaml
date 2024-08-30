@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: plex
-spec:
-  type: ExternalName
-  externalName: "plex-plex-media-server.plex.svc.cluster.local"

@@ -13,13 +13,13 @@ global:
 
 ingress:
   # Specify if an ingress resource for the pms server should be created or not
-  enabled: false
+  enabled: True
 
   # The ingress class that should be used
   ingressClassName: "traefik-external"
 
   # The url to use for the ingress reverse proxy to point at this pms instance
-  url: ""
+  url: "plex"
 
   # Custom annotations to put on the ingress resource
   annotations: {}
@@ -170,11 +170,9 @@ priorityClassName: ""
 
 # Common Labels for all resources created by this chart.
 commonLabels: 
-  repository: git@github.com:christian-elsee/plexs
+  repository: "Z2l0QGdpdGh1Yi5jb206Y2hyaXN0aWFuLWVsc2VlL3BsZXg"
 
-extraEnv:
-  PLEX_CLAIM: ${CLAIM}
-
+extraEnv: { }
 # This claim is optional, and is only used for the first startup of PMS
 # The claim is obtained from https://www.plex.tv/claim/ is is only valid for a few minutes
 #   PLEX_CLAIM: "claim"
