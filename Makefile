@@ -24,6 +24,9 @@ dist:
 
 build: secret/PLEX_CLAIM values.yaml
 	: ## $@
+	tail -n +1 manifest/* \
+		| sed -E -- 's/^.+\=$$/---/' \
+		| tee dist/manifest.yaml
 
 	helm template "$(NAME)" plex/plex-media-server \
 		--namespace "$(NAME)" \
@@ -33,25 +36,32 @@ build: secret/PLEX_CLAIM values.yaml
 		--dry-run=client \
 	| tee dist/chart.yaml
 
-check: secret/PLEX_CLAIM values.yaml
+check: secret/PLEX_CLAIM dist/manifest.yaml values.yaml
 	: ## $@
+	kubectl apply \
+		--dry-run=client \
+		-f dist/manifest.yaml
+
 	helm upgrade "$(NAME)" plex/plex-media-server \
 		--install \
 		--namespace "$(NAME)" \
 		--create-namespace \
 		--values values.yaml \
-		--set "extraEnv.PLEX_CLAIM=$(shell cat $<)" \
+		--set "extraEnv.PLEX_CLAIM=$(shell cat secret/PLEX_CLAIM)" \
 		--dry-run=client
 
 ## make install
-install/plex: secret/PLEX_CLAIM
+install/plex: dist/manifest.yaml secret/PLEX_CLAIM
 	: ## $@
+	kubectl apply -f manifest/namespace.yaml
+	kubectl apply -f dist/manifest.yaml --namespace "$(NAME)"
+
 	helm upgrade "$(NAME)" plex/plex-media-server \
 		--install \
 		--namespace "$(NAME)" \
 		--create-namespace \
 		--values values.yaml \
-		--set "extraEnv.PLEX_CLAIM=$(shell cat $<)" \
+		--set "extraEnv.PLEX_CLAIM=$(shell cat secret/PLEX_CLAIM)" \
 
 post-install:
 	: ## $@

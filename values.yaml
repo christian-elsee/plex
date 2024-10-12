@@ -13,13 +13,13 @@ global:
 
 ingress:
   # Specify if an ingress resource for the pms server should be created or not
-  enabled: True
+  enabled: False
 
   # The ingress class that should be used
   ingressClassName: "traefik-external"
 
   # The url to use for the ingress reverse proxy to point at this pms instance
-  url: "plex"
+  url: ""
 
   # Custom annotations to put on the ingress resource
   annotations: {}
@@ -187,11 +187,10 @@ extraEnv: { }
 
 
 # Optionally specify additional volume mounts for the PMS and init containers.
-extraVolumeMounts: []
-# extraVolumeMounts:
-#   - name: some-volume-name
-#     mountPath: /path/in/container
-
+#extraVolumeMounts: []
+extraVolumeMounts:
+- name: media
+  mountPath: /var/tmp/media
 
 # Optionally specify additional volumes for the pod.
 extraVolumes: []

@@ -1,6 +1,6 @@
 # plex
 
-A [plex](https://github.com/plexinc) orchestration workflow for kubernetes. Encapsulates the [plexinc helm chart](https://github.com/plexinc/pms-docker/tree/master/charts/plex-media-server) orchestration.
+A [plex](https://github.com/plexinc) orchestration workflow for kubernetes. Encapsulates the [plexinc helm chart](https://github.com/plexinc/pms-docker/tree/master/charts/plex-media-server).
 
 - [Requirements](#requirements)
 - [Setup](#setup)
@@ -9,7 +9,7 @@ A [plex](https://github.com/plexinc) orchestration workflow for kubernetes. Enca
 
 ## Requirements
 
-A list of development environment dependencies.
+A list of notable tools, and their respective versions, at the time of development time.
 
 - [GNU coreutils](https://en.wikipedia.org/wiki/List_of_GNU_Core_Utilities_commands), 9.5
 ```sh
