@@ -2,14 +2,8 @@ version: '3.9'
 
 networks:
   plex_net:
-    driver: macvlan
-    driver_opts:
-      parent: enp4s0  # Change this to your actual network interface
-    ipam:
-      config:
-        - subnet: 192.168.86.0/24  # Match your LAN
-          gateway: 192.168.86.1     # Your router
-          ip_range: 192.168.86.100/32  # IP assigned to the Plex container
+    external: true  # This tells Docker Compose to use the existing network
+    name: plex_macvlan
 
 services:
   plex:
