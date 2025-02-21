@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 .DEFAULT_GOAL := all
 .SHELLFLAGS := -euo pipefail $(if $(TRACE),-x,) -c
 .ONESHELL:

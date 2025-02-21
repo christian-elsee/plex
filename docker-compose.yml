@@ -1,0 +1,31 @@
+version: '3.9'
+
+networks:
+  plex_net:
+    driver: macvlan
+    driver_opts:
+      parent: eth0  # Change this to your actual network interface
+    ipam:
+      config:
+        - subnet: 192.168.86.0/24  # Match your LAN
+          gateway: 192.168.86.1     # Your router
+          ip_range: 192.168.86.100/32  # IP assigned to the Plex container
+
+services:
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    networks:
+      plex_net:
+        ipv4_address: 192.168.86.100
+    ports:
+      - "32400:32400"  # Explicitly open Plex’s main web interface port
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York
+      - VERSION=docker
+    volumes:
+      - /var/tmp/media:/media
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
