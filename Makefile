@@ -13,6 +13,7 @@ export NAME := $(shell basename $(PWD))
 ## interface ####################################
 all: distclean dist check build
 install:
+status:
 clean: destroy distclean
 
 ## workflow ######################################
