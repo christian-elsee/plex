@@ -3,7 +3,6 @@
 !.gitignore
 !README.md
 !Makefile
-!values.yaml
-!manifest
-!manifest/*
-!docker-compose.yml
+!docker-compose.yaml
+!PLEX_CLAIM.dist
+!.env.dist

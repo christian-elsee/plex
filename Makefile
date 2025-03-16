@@ -7,14 +7,15 @@ SHELL := /bin/bash
 ## env ##########################################
 export NAME := $(shell basename $(PWD))
 
+## include ######################################
+-include .env
+
 ## interface ####################################
-all: distclean dist build check
-install: install/plex post-install
-init: init/secret init/helm values.yaml
-clean: delete distclean
+all: distclean dist check build
+install:
+clean: destroy distclean
 
 ## workflow ######################################
-## make [all]
 distclean:
 	: ## $@
 	rm -rf dist
@@ -23,81 +24,43 @@ dist:
 	: ## $@
 	mkdir -p $@
 
-build: secret/PLEX_CLAIM values.yaml
+check: docker-compose.yaml
 	: ## $@
-	tail -n +1 manifest/* \
-		| sed -E -- 's/^.+\=$$/---/' \
-		| tee dist/manifest.yaml
+	<$^ yq -re .
 
-	helm template "$(NAME)" plex/plex-media-server \
-		--namespace "$(NAME)" \
-		--create-namespace \
-		--values values.yaml \
-		--set "extraEnv.PLEX_CLAIM=$(shell cat $<)" \
-		--dry-run=client \
-	| tee dist/chart.yaml
-
-check: secret/PLEX_CLAIM dist/manifest.yaml values.yaml
+build: docker-compose.yaml PLEX_CLAIM .env
 	: ## $@
-	kubectl apply \
-		--dry-run=client \
-		-f dist/manifest.yaml
-
-	helm upgrade "$(NAME)" plex/plex-media-server \
-		--install \
-		--namespace "$(NAME)" \
-		--create-namespace \
-		--values values.yaml \
-		--set "extraEnv.PLEX_CLAIM=$(shell cat secret/PLEX_CLAIM)" \
-		--dry-run=client
-
-## make install
-install/plex: dist/manifest.yaml secret/PLEX_CLAIM
+	cp PLEX_CLAIM .env dist
+	docker compose config \
+		| tee dist/docker-compose.yaml
+PLEX_CLAIM: PLEX_CLAIM.dist
 	: ## $@
-	kubectl apply -f manifest/namespace.yaml
-	kubectl apply -f dist/manifest.yaml --namespace "$(NAME)"
-
-	helm upgrade "$(NAME)" plex/plex-media-server \
-		--install \
-		--namespace "$(NAME)" \
-		--create-namespace \
-		--values values.yaml \
-		--set "extraEnv.PLEX_CLAIM=$(shell cat secret/PLEX_CLAIM)" \
-
-post-install:
+	cp $^ $@
+.env: .env.dist
 	: ## $@
-	# sanity check install
-	helm status "$(NAME)" -n "$(NAME)"
-	helm get values "$(NAME)" -n "$(NAME)" \
-		| tee dist/values.yaml
+	cp $^ $@
+
+install: dist/docker-compose.yaml
+	: ## $@
+	: ## Deploy orchestration target
+	cd dist
+
+	docker network create macvlan \
+	  --driver=macvlan \
+	  --opt parent=$(IFACE) \
+	  --subnet=192.168.86.0/24 \
+	  --gateway=192.168.86.1 \
+	||:
+	docker compose up -d
+
+status:
+	: ## $@
+	: ## Show compose project status
+	docker compose ps
 
 ## make clean
-delete:
+destroy: dist
 	: ## $@
-	helm delete $(NAME) \
-		-n $(NAME) \
-		--debug \
-		--no-hooks \
-		--ignore-not-found \
-		--cascade=foreground \
-	||:
-	kubectl delete namespace $(NAME) --wait --cascade=foreground \
-	||:
-
-## make init
-init/secret: secret secret/PLEX_CLAIM
-secret:
-	: ## $@
-	mkdir $@
-secret/PLEX_CLAIM:
-	: ## $@
-	touch $@
-
-init/helm:
-	: ## $@
-	helm repo add "$(NAME)" \
-		https://raw.githubusercontent.com/plexinc/pms-docker/gh-pages
-
-values.yaml:
-	: ## $@
-	helm show values plex/plex-media-server | tee $@
+	: ## Remove all orchestration artifacts
+	cd dist
+	docker compose down --volumes --remove-orphans

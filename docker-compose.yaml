@@ -1,16 +1,16 @@
 version: '3.9'
 
 networks:
-  plex_net:
-    external: true  # This tells Docker Compose to use the existing network
-    name: plex_macvlan
+  macvlan:
+    external: true
+    name: macvlan
 
 services:
   plex:
     image: lscr.io/linuxserver/plex:latest
     container_name: plex
     networks:
-      plex_net:
+      macvlan:
         ipv4_address: 192.168.86.100
     ports:
       - "32400:32400"  # Explicitly open Plex’s main web interface port
